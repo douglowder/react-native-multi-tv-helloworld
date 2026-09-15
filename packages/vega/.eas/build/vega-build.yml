@@ -11,7 +11,11 @@ build:
           # to build a package.
           export NONINTERACTIVE=true
           export SKIP_VVD_INSTALL=true
-          curl -fsSL https://sdk-installer.vega.labcollab.net/get_vvm.sh | bash
+          if [[ "$EAS_BUILD_RUNNER" != "eas-build" ]]; then
+            curl -fsSL https://sdk-installer.vega.labcollab.net/get_vvm.sh | bash
+          else
+            echo "Running locally; skip install of Vega tools"
+          fi
           # `export` is step-local; set-env publishes PATH to every later step.
           set-env PATH "$HOME/vega/bin:$PATH"
 
