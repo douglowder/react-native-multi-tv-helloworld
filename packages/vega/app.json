@@ -9,6 +9,15 @@
       "eas": {
         "projectId": "69794470-6217-4f50-9649-c0fc83cca03f"
       }
+    },
+    "ios": {
+      "bundleIdentifier": "com.douglowderexpo.helloworldvega",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
+    },
+    "android": {
+      "package": "com.douglowderexpo.helloworldvega"
     }
   }
 }

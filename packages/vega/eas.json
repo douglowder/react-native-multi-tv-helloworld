@@ -4,20 +4,22 @@
     "appVersionSource": "remote"
   },
   "build": {
-    "development": {
-      "developmentClient": true,
+    "base": {
+      "android": {
+        "resourceClass": "large",
+        "image": "latest"
+      },
+      "ios": {
+        "resourceClass": "large",
+        "image": "latest"
+      },
+      "node": "24.13.0",
+      "withoutCredentials": true,
       "distribution": "internal"
-    },
-    "preview": {
-      "distribution": "internal"
-    },
-    "production": {
-      "autoIncrement": true
     },
     "vega": {
+      "extends": "base",
       "config": "vega-build.yml",
-      "withoutCredentials": true,
-      "corepack": true,
       "env": {
         "VEGA_SDK_VERSION": "0.24.9914",
         "VEGA_BUILD_TYPE": "debug"
