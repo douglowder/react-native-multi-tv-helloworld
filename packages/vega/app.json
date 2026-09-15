@@ -1,5 +1,14 @@
 {
   "//": "The declared app name must follow this pattern to be KRL-compatible",
   "name": "com.amazondeveloper.hellosharedworkspace.main",
-  "displayName": "HelloSharedWorkspace"
+  "displayName": "HelloSharedWorkspace",
+  "expo": {
+    "name": "hello-world-vega",
+    "slug": "hello-world-vega",
+    "extra": {
+      "eas": {
+        "projectId": "69794470-6217-4f50-9649-c0fc83cca03f"
+      }
+    }
+  }
 }
