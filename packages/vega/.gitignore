@@ -14,3 +14,8 @@ CMakeUserPresets.json
 npm-debug.log
 .kiro/*
 yarnRefactoring
+
+# The `build/` rule above also matches .eas/build, where the EAS custom build
+# config lives. Keep that directory tracked.
+!.eas/build/
+!.eas/build/**

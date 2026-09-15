@@ -13,6 +13,15 @@
     },
     "production": {
       "autoIncrement": true
+    },
+    "vega": {
+      "config": "vega-build.yml",
+      "withoutCredentials": true,
+      "corepack": true,
+      "env": {
+        "VEGA_SDK_VERSION": "0.24.9914",
+        "VEGA_BUILD_TYPE": "debug"
+      }
     }
   },
   "submit": {

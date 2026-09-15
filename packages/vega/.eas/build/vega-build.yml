@@ -1,0 +1,34 @@
+build:
+  name: Build Vega app
+  steps:
+    - eas/checkout
+
+    - run:
+        name: Install Vega Developer Tools
+        command: |
+          # NONINTERACTIVE skips the installer prompts. SKIP_VVD_INSTALL omits the
+          # virtual device, which cannot run on a headless runner and is not needed
+          # to build a package.
+          export NONINTERACTIVE=true
+          export SKIP_VVD_INSTALL=true
+          curl -fsSL https://sdk-installer.vega.labcollab.net/get_vvm.sh | bash
+          # `export` is step-local; set-env publishes PATH to every later step.
+          set-env PATH "$HOME/vega/bin:$PATH"
+
+    - run:
+        name: Verify Vega SDK
+        command: |
+          vega --version
+          vega sdk list-installed
+
+    - eas/install_node_modules
+
+    - run:
+        name: Build vpkg
+        command: yarn run "build:${VEGA_BUILD_TYPE}"
+
+    - eas/upload_artifact:
+        name: Upload vpkg
+        inputs:
+          type: other
+          path: build/*/*.vpkg
