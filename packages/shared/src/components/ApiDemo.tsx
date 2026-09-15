@@ -10,7 +10,7 @@ interface Joke {
 }
 
 const httpClient = createHttpClient({
-  baseUrl: 'http://official-joke-api.appspot.com',
+  baseUrl: 'https://official-joke-api.appspot.com',
   timeout: 10000,
 });
 

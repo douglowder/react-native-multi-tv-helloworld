@@ -15,7 +15,7 @@ export interface TileProps {
   icon: ImageSourcePropType;
   isFocused: boolean;
   onFocus: (id: string) => void;
-  onBlur: () => void;
+  onBlur: (id: string) => void;
   testID?: string;
   accessibilityLabel?: string;
   hasTVPreferredFocus?: boolean;
@@ -34,12 +34,13 @@ export const Tile = memo(
     hasTVPreferredFocus,
   }: TileProps) => {
     const handleFocus = useCallback(() => onFocus(id), [id, onFocus]);
+    const handleBlur = useCallback(() => onBlur(id), [id, onBlur]);
 
     return (
       <TouchableOpacity
         style={[styles.tile, isFocused ? styles.focused : styles.default]}
         onFocus={handleFocus}
-        onBlur={onBlur}
+        onBlur={handleBlur}
         testID={testID}
         accessibilityLabel={accessibilityLabel}
         accessibilityRole="button"

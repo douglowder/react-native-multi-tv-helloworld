@@ -17,8 +17,8 @@ export const HomeScreen = () => {
     setFocusedTileId(tileId);
   }, []);
 
-  const handleTileBlur = useCallback(() => {
-    setFocusedTileId('home');
+  const handleTileBlur = useCallback((tileId: string) => {
+    setFocusedTileId(prev => (prev === tileId ? 'home' : prev));
   }, []);
 
   const renderFocusedContent = () => {
