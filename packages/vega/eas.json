@@ -21,8 +21,7 @@
       "extends": "base",
       "config": "vega-build.yml",
       "env": {
-        "VEGA_SDK_VERSION": "0.24.9914",
-        "VEGA_BUILD_TYPE": "debug"
+        "VEGA_SDK_VERSION": "0.24.9914"
       }
     }
   },

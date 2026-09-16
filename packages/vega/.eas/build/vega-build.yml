@@ -28,11 +28,26 @@ build:
     - eas/install_node_modules
 
     - run:
-        name: Build vpkg
-        command: yarn run "build:${VEGA_BUILD_TYPE}"
+        name: Build debug vpkg
+        command: |
+          yarn run "build:debug"
+
+    - run:
+        name: Build release vpkg
+        command: |
+          yarn run "build:release"
+
+    - run:
+        name: Move artifacts to final location and archive them
+        working_directory: ../..
+        command: |
+          mkdir vega_artifacts
+          mv packages/vega/build/*release vega_artifacts
+          mv packages/vega/build/*debug vega_artifacts
+          tar zcf vega_artifacts.tgz vega_artifacts
 
     - eas/upload_artifact:
         name: Upload vpkg
         inputs:
           type: build-artifact
-          path: packages/vega/build/**/*.vpkg
+          path: vega_artifacts.tgz
