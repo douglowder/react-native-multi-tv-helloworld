@@ -18,10 +18,18 @@ const metroTools = getMetroTools();
  *
  * @type {import('metro-config').MetroConfig}
  */
+const defaultConfig = getDefaultConfig(__dirname);
+
 const config = {
   projectRoot: monorepoRoot,
   watchFolders: [monorepoRoot, ...metroTools.watchFolders],
   resolver: {
+    // Extensions Expo's default config declares but React Native's does not.
+    // Nothing here uses them; they are listed so expo-doctor's Metro check sees
+    // Expo's defaults as a subset of ours. Adding candidate extensions is inert
+    // for the Kepler bundler.
+    sourceExts: [...defaultConfig.resolver.sourceExts, 'mjs', 'cjs', 'scss', 'sass', 'css'],
+    assetExts: [...defaultConfig.resolver.assetExts, 'heic', 'avif', 'db'],
     nodeModulesPaths: [
       path.resolve(projectRoot, 'node_modules'),
       path.resolve(monorepoRoot, 'node_modules'),
@@ -36,4 +44,4 @@ const config = {
   },
 };
 
-module.exports = mergeConfig(getDefaultConfig(__dirname), config);
+module.exports = mergeConfig(defaultConfig, config);
