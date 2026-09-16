@@ -195,6 +195,116 @@ yarn expotv:ios
 yarn expotv:web
 ```
 
+## EAS Builds
+
+The Vega app builds on [EAS Build](https://docs.expo.dev/build/introduction/)
+workers. Vega is not an EAS platform, so the build uses a
+[custom build config](https://docs.expo.dev/custom-builds/get-started/) that
+installs the Vega Developer Tools on the worker before bundling. Both macOS and
+Linux workers work.
+
+### Files
+
+| File | Purpose |
+| --- | --- |
+| `packages/vega/eas.json` | The `vega` build profile, extending a shared `base` profile |
+| `packages/vega/.eas/build/vega-build.yml` | Custom build steps: install the Vega SDK, build, upload |
+| `packages/vega/.eas/workflows/build.yml` | Manual workflow, started from GitHub or the EAS dashboard |
+
+### Running a build
+
+From `packages/vega`:
+
+```bash
+eas build -p android -e vega
+```
+
+The `-p android` flag only selects a Linux worker image. Nothing
+Android-specific runs; the platform flag is required because Vega is not one of
+the platforms EAS knows about.
+
+To start the same build from GitHub or the EAS dashboard, dispatch the
+**Vega build workflow** manually.
+
+### What the build does
+
+1. Installs the Vega Developer Tools with `NONINTERACTIVE=true`, pinned to
+   `VEGA_SDK_VERSION` in the `vega` profile. `SKIP_VVD_INSTALL=true` omits the
+   virtual device, which cannot run on a headless worker and is not needed to
+   produce a package.
+2. Builds both debug and release `.vpkg` files for `armv7`, `x86_64`, and
+   `aarch64`.
+3. Uploads them as a single `vega_artifacts.tgz` build artifact.
+
+Download and unpack the artifact, then install the package that matches your
+device with the `vvd:*` scripts described in
+[Vega (Fire TV) CLI](#vega-fire-tv-cli) above. A debug `.vpkg` installed that
+way loads its bundle from Metro, so Fast Refresh works against a downloaded
+build.
+
+### Repository settings that EAS depends on
+
+Two settings exist specifically to keep EAS builds working. Both are easy to
+undo by accident.
+
+**`.gitignore` must not ignore `.eas/build`.** EAS filters the uploaded archive
+through `.gitignore`. A bare `build/` rule matches a directory of that name at
+any depth, including `packages/vega/.eas/build`, which silently drops the custom
+build config from the upload and fails the build. The rule is therefore anchored:
+
+```gitignore
+packages/vega/build/
+```
+
+**`metro.config.js` does not extend `expo/metro-config`.** `expo-doctor` warns
+about this, but adopting Expo's config breaks the build today. The config
+instead declares the extra `sourceExts` and `assetExts` that Expo's defaults
+add, which satisfies part of the check while keeping the Kepler platform.
+
+Vega bundles with the platform name `kepler`, which the Kepler CLI registers on
+top of React Native's Metro defaults. Expo's `getDefaultConfig` sets an explicit
+platform list:
+
+```js
+platforms: ['ios', 'android', 'tvos', 'macos']
+```
+
+`kepler` is not in it, so the bundler stops with:
+
+```
+error: Invalid platform "kepler" selected.
+Available platforms are: "ios", "android", "tvos", "macos".
+```
+
+Adding `kepler` back to `resolver.platforms` gets past that error but not much
+further: module resolution then pulls React Native internals from `react-native`
+instead of `@amazon-devices/react-native-kepler`, and the bundle fails on files
+such as `ReactDevToolsSettingsManager`, which ships only `.android.js` and
+`.ios.js` variants. Expo's resolver defaults differ from React Native's here —
+notably `unstable_conditionNames`, which Expo leaves empty and React Native sets
+to `['react-native']`.
+
+Making Expo's Metro config usable from Vega is therefore work on the Expo side:
+it needs a supported way to declare an out-of-tree platform rather than a fixed
+list. It may also need Vega to move to a newer React Native first. The versions
+are some way apart today, and `expo-doctor` already reports the gap:
+
+| Package | Expected by Expo SDK 57 | Used by Vega |
+| --- | --- | --- |
+| `react-native` | 0.86.3 | 0.83.0 |
+| `typescript` | ~6.0.3 | 5.8.3 |
+
+Until then, extending `@react-native/metro-config` is the supported path. The
+Kepler build prints its own warning if the config does not:
+
+> From React Native 0.73, your project's Metro config should extend
+> `@react-native/metro-config` or it will fail to build.
+
+One `expo-doctor` warning remains, about `projectRoot` pointing at the monorepo
+root rather than `packages/vega`. That setting is required: the entry point is
+the root `index.js`, and Metro refuses to serve assets from `packages/shared`
+without it. Removing it still builds, but the app renders without its icons.
+
 ## Tech Stack
 
 |              | Expo TV                    | Vega (Fire TV)                                     |
