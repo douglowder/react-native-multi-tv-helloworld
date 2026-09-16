@@ -19,7 +19,13 @@
     "release": "npm-run-all lint test build:app",
     "vvd:mseries": "vega run-app build/aarch64-debug/vega_aarch64.vpkg com.amazondeveloper.hellosharedworkspace.main -d VirtualDevice",
     "vvd:intel": "vega run-app build/x86_64-debug/vega_x86_64.vpkg com.amazondeveloper.hellosharedworkspace.main -d VirtualDevice",
-    "firetv": "vega run-app build/armv7-release/vega_armv7.vpkg com.amazondeveloper.hellosharedworkspace.main -d"
+    "firetv": "vega run-app build/armv7-release/vega_armv7.vpkg com.amazondeveloper.hellosharedworkspace.main -d",
+    "vvd:start": "vega virtual-device start",
+    "vvd:stop": "vega virtual-device stop",
+    "vvd:port": "vega device start-port-forwarding --port 8081 --forward false -d VirtualDevice",
+    "vvd:install": "vega device install-app -d VirtualDevice -p",
+    "vvd:launch": "vega device launch-app -d VirtualDevice -a com.amazondeveloper.hellosharedworkspace.main",
+    "vvd:uninstall": "vega device uninstall-app -d VirtualDevice -a com.amazondeveloper.hellosharedworkspace.main"
   },
   "dependencies": {
     "@amazon-devices/kepler-module-resolver-preset": "^0.1.15",

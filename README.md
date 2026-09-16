@@ -138,6 +138,26 @@ vega run-app packages/vega/build/aarch64-debug/vega_aarch64.vpkg com.amazondevel
 vega run-app packages/vega/build/x86_64-debug/vega_x86_64.vpkg com.amazondeveloper.hellosharedworkspace.main -d VirtualDevice
 ```
 
+Run a prebuilt package against the packager (for example, a `.vpkg` downloaded
+from an EAS build). Each step is a separate script, so you can repeat any one of
+them without redoing the others. Run these from `packages/vega`:
+
+```bash
+yarn vvd:start                          # boot the virtual device
+yarn start                              # Metro, in a second terminal
+yarn vvd:port                           # let the device reach Metro on 8081
+yarn vvd:install path/to/vega_aarch64.vpkg
+yarn vvd:launch
+```
+
+A debug package installed this way loads its bundle from Metro, so Fast Refresh
+works. When you are finished:
+
+```bash
+yarn vvd:uninstall
+yarn vvd:stop
+```
+
 Run on a Fire TV Stick (replace `<DSN>` with your device serial number):
 
 ```bash
