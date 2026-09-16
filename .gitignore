@@ -9,6 +9,10 @@ package-lock.json
 
 # Vega build files
 packages/vega/buildinfo.json
+# Anchored on purpose: a bare `build/` also matches packages/vega/.eas/build,
+# which holds the EAS custom build config and must be uploaded.
+packages/vega/build/
+packages/vega/CMakeUserPresets.json
 dist/
 *.vpkg
 *.bundle
