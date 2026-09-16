@@ -2,7 +2,7 @@ build:
   name: Build Vega app
   steps:
     - eas/checkout
-
+    - eas/install_node_modules
     - run:
         name: Install Vega Developer Tools
         command: |
@@ -11,7 +11,7 @@ build:
           # to build a package.
           export NONINTERACTIVE=true
           export SKIP_VVD_INSTALL=true
-          if [[ "$EAS_BUILD_RUNNER" != "eas-build" ]]; then
+          if [[ "$EAS_BUILD_RUNNER" == "eas-build" ]]; then
             curl -fsSL https://sdk-installer.vega.labcollab.net/get_vvm.sh | bash
           else
             echo "Running locally; skip install of Vega tools"
@@ -34,5 +34,5 @@ build:
     - eas/upload_artifact:
         name: Upload vpkg
         inputs:
-          type: other
-          path: build/*/*.vpkg
+          type: build-artifact
+          path: packages/vega/build/**/*.vpkg

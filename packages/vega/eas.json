@@ -13,7 +13,7 @@
         "resourceClass": "large",
         "image": "latest"
       },
-      "node": "24.13.0",
+      "corepack": true,
       "withoutCredentials": true,
       "distribution": "internal"
     },

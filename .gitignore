@@ -9,7 +9,6 @@ package-lock.json
 
 # Vega build files
 packages/vega/buildinfo.json
-build/
 dist/
 *.vpkg
 *.bundle
