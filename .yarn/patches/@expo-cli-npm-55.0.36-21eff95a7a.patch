@@ -1,0 +1,67 @@
+diff --git a/build/src/export/resolveOptions.js b/build/src/export/resolveOptions.js
+index 9438724bc2c35b1aea6b9bc243bc955150e9e939..253e89193f6ddea2ece2963602341abd60a29869 100644
+--- a/build/src/export/resolveOptions.js
++++ b/build/src/export/resolveOptions.js
+@@ -47,7 +47,8 @@ function resolvePlatformOption(configPlatforms, platformBundlers, platform = [
+         'ios',
+         'web',
+         'tvos',
+-        'macos'
++        'macos',
++        'kepler'
+     ];
+     const assertPlatformIsKnown = (platform)=>{
+         if (!knownPlatforms.includes(platform)) {
+diff --git a/build/src/start/server/metro/createExpoAutolinkingResolver.js b/build/src/start/server/metro/createExpoAutolinkingResolver.js
+index 3851e820103545dbd3aa9a72ecaf9f5fef90eac9..a6f1e65277b902bf184335e3e2d39ff8352cb91a 100644
+--- a/build/src/start/server/metro/createExpoAutolinkingResolver.js
++++ b/build/src/start/server/metro/createExpoAutolinkingResolver.js
+@@ -54,7 +54,8 @@ const AUTOLINKING_PLATFORMS = [
+     'ios',
+     'web',
+     'tvos',
+-    'macos'
++    'macos',
++    'kepler'
+ ];
+ const escapeDependencyName = (dependency)=>dependency.replace(/[*.?()[\]]/g, (x)=>`\\${x}`);
+ const _dependenciesToRegex = (dependencies)=>new RegExp(`^(${dependencies.map(escapeDependencyName).join('|')})($|/.*)`);
+diff --git a/build/src/start/server/metro/instantiateMetro.js b/build/src/start/server/metro/instantiateMetro.js
+index 2a57e72a7dff94af0c72d513eadac3a0fc92122b..50e6d5bb8982d57518d242ab1a07c62678554c31 100644
+--- a/build/src/start/server/metro/instantiateMetro.js
++++ b/build/src/start/server/metro/instantiateMetro.js
+@@ -143,7 +143,7 @@ async function loadMetroConfigAsync(projectRoot, options, { exp, isExporting, ge
+     const isWorkspace = serverRoot !== projectRoot;
+     // Out-of-tree platforms (tvos/macos) rely on the autolinking module resolver to remap the
+     // react-native package to their support package, and require autolinking module resolution
+-    const targetsOutOfTreePlatform = (0, _config().getPlatformsFromConfig)(projectRoot, exp).some((platform)=>platform === 'tvos' || platform === 'macos');
++    const targetsOutOfTreePlatform = (0, _config().getPlatformsFromConfig)(projectRoot, exp).some((platform)=>platform === 'tvos' || platform === 'macos' || platform === 'kepler');
+     // Autolinking Module Resolution is enabled by default in a monorepo or for out-of-tree platforms.
+     const autolinkingModuleResolutionEnabled = ((_exp_experiments = exp.experiments) == null ? void 0 : _exp_experiments.autolinkingModuleResolution) ?? (isWorkspace || targetsOutOfTreePlatform);
+     const serverActionsEnabled = ((_exp_experiments1 = exp.experiments) == null ? void 0 : _exp_experiments1.reactServerFunctions) ?? _env.env.EXPO_UNSTABLE_SERVER_FUNCTIONS;
+diff --git a/build/src/start/server/middleware/resolvePlatform.js b/build/src/start/server/middleware/resolvePlatform.js
+index 3353e5554a797fb17d6a2e638c15ea5c8f669b69..26a9a3a83b533661a16f733afa23669f83ccae05 100644
+--- a/build/src/start/server/middleware/resolvePlatform.js
++++ b/build/src/start/server/middleware/resolvePlatform.js
+@@ -64,7 +64,8 @@ function assertRuntimePlatform(platform) {
+         'ios',
+         'web',
+         'tvos',
+-        'macos'
++        'macos',
++        'kepler'
+     ].includes(stringifiedPlatform)) {
+         throw new _errors.CommandError('PLATFORM_HEADER', `platform must be "android", "ios", "web", "tvos", or "macos". Received: "${platform}"`);
+     }
+diff --git a/build/src/start/server/platformBundlers.js b/build/src/start/server/platformBundlers.js
+index ea5402c0954318d0a2572b2eb830d41982f683fd..1af71d0282a13af95bcb277afee16452f1224a36 100644
+--- a/build/src/start/server/platformBundlers.js
++++ b/build/src/start/server/platformBundlers.js
+@@ -34,6 +34,7 @@ function getPlatformBundlers(projectRoot, exp) {
+         android: ((_exp_android = exp.android) == null ? void 0 : _exp_android.bundler) ?? 'metro',
+         web,
+         tvos: 'metro',
++        kepler: 'metro',
+         macos: 'metro'
+     };
+ }

@@ -1,0 +1,13 @@
+diff --git a/build/platforms/index.js b/build/platforms/index.js
+index 9f6ed619d741a026ed73427637def75de141775a..57f43f2607d60c35f8ad3b5cfd9f3fae082a1833 100644
+--- a/build/platforms/index.js
++++ b/build/platforms/index.js
+@@ -31,6 +31,8 @@ function getSupportPackageForPlatform(platform) {
+             return 'react-native-tvos';
+         case 'macos':
+             return 'react-native-macos';
++        case 'kepler':
++            return '@amazon-devices/react-native-kepler';
+         case 'windows':
+             return 'react-native-windows';
+         case 'apple':

@@ -1,0 +1,26 @@
+diff --git a/build/Config.js b/build/Config.js
+index feeccbfa13859348efea5db841cfdebddac4052a..af356649fe38b38b3682064d9d24e6936ffe542d 100644
+--- a/build/Config.js
++++ b/build/Config.js
+@@ -171,6 +171,9 @@ function getSupportedPlatforms(projectRoot, exp) {
+     if ((0, _requireUtils().resolveFrom)(projectRoot, 'react-native-tvos/package.json')) {
+       platforms.push('tvos');
+     }
++    if ((0, _requireUtils().resolveFrom)(projectRoot, '@amazon-devices/react-native-kepler/package.json')) {
++        platforms.push('kepler');
++    }
+     if ((0, _requireUtils().resolveFrom)(projectRoot, 'react-native-macos/package.json')) {
+       platforms.push('macos');
+     }
+diff --git a/build/paths/extensions.js b/build/paths/extensions.js
+index fba132e0ebbf6b483413e81e3044fd3a8ad366ef..503f271b9bca655b3fce716cb6c8e237d8a6cc29 100644
+--- a/build/paths/extensions.js
++++ b/build/paths/extensions.js
+@@ -60,6 +60,7 @@ function getBareExtensions(platforms, languageOptions = {
+   return fileExtensions;
+ }
+ const PLATFORM_EXTENSIONS = {
++    kepler: ['kepler', 'native'],
+   tvos: ['tvos', 'ios', 'native'],
+   macos: ['macos', 'ios', 'native']
+ };

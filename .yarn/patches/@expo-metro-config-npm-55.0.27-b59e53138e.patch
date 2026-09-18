@@ -1,0 +1,27 @@
+diff --git a/build/ExpoMetroConfig.js b/build/ExpoMetroConfig.js
+index 7c8b7e61a28ccbef28344db01fcd6002ed9254ad..306fc037074008a9eee1ae47451afa0ff842c036 100644
+--- a/build/ExpoMetroConfig.js
++++ b/build/ExpoMetroConfig.js
+@@ -37,6 +37,8 @@ function getReactNativeHostPackage(platform) {
+             return 'react-native-tvos';
+         case 'macos':
+             return 'react-native-macos';
++        case 'kepler':
++            return '@amazon-devices/react-native-kepler';
+         default:
+             return 'react-native';
+     }
+@@ -227,11 +229,12 @@ function getDefaultConfig(projectRoot, { mode, isCSSEnabled = true, unstable_bef
+                 android: ['react-native'],
+                 tvos: ['react-native'],
+                 macos: ['react-native'],
++                kepler: ['react-native'],
+                 // This is removed for server platforms.
+                 web: ['browser'],
+             },
+             resolverMainFields: ['react-native', 'browser', 'main'],
+-            platforms: ['ios', 'android', 'tvos', 'macos'],
++            platforms: ['ios', 'android', 'tvos', 'macos', 'kepler'],
+             assetExts: metroDefaultValues.resolver.assetExts
+                 .concat(
+             // Add default support for `expo-image` file types.
