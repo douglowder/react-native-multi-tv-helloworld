@@ -27,9 +27,7 @@
           }
         }
       ],
-      "expo-web-browser",
-      "expo-splash-screen",
-      "expo-status-bar"
+      "expo-web-browser"
     ],
     "android": {
       "splash": {
