@@ -112,12 +112,16 @@ You can build and run using either the CLI or the [Vega Studio IDE extension](ht
 Build the project:
 
 ```bash
-# Debug build (recommended for development, enables Fast Refresh)
+# Debug build (recommended for development, enables Fast Refresh).
+# Bundles with Expo: expo export:embed, then Hermes, then the native build.
 yarn workspace @multitv/vega run build:debug
 
-# Release build
+# Release build. Still bundles through the Vega CLI -- see "Known Issues".
 yarn workspace @multitv/vega run build:release
 ```
+
+The packager is `expo start`. Fast Refresh and Expo dev tooling such as Atlas
+(`EXPO_ATLAS=1`, served at `/_expo/atlas`) work against it.
 
 Run on a Vega virtual device:
 
@@ -333,6 +337,57 @@ The shared package uses React Native's platform resolution to load the right ass
 ## Notes
 
 The Expo TV app (`packages/expotv/`) was scaffolded from the default Expo TV template. Some boilerplate files from the template (e.g. `HelloWave`, `ParallaxScrollView`, `ExternalLink`) are still present and not used by the shared components. They're harmless but can be removed if you want a cleaner setup.
+
+## Known Issues
+
+### Release bundles cannot be built with Expo
+
+The packager and the debug build use Expo (`expo start` and `expo export:embed`).
+Release still bundles through the Vega CLI, because an Expo-produced release
+bundle loads on device but never renders.
+
+The cause is Expo's replacement for Metro's module system. `@expo/cli` swaps it
+in unconditionally, in
+`@expo/cli/build/src/start/server/metro/withMetroMultiPlatform.js`:
+
+```js
+// NOTE(@kitten): This is now always active and EXPO_USE_METRO_REQUIRE / isNamedRequiresEnabled is disregarded
+const metroRequirePolyfill = require.resolve('@expo/cli/build/metro-require/require');
+asWritable(metroDefaults).moduleSystem = metroRequirePolyfill;
+```
+
+That polyfill installs itself conditionally
+(`@expo/cli/build/metro-require/require.js`):
+
+```js
+if (__DEV__ || !global[`${__METRO_GLOBAL_PREFIX__}__d`]) {
+    global.__r = metroRequire;
+    global[`${__METRO_GLOBAL_PREFIX__}__d`] = define;
+    ...
+}
+```
+
+The Vega runtime defines `__r`, `__d` and `__registerSegment` before any bundle
+loads. In a release bundle `__DEV__` is false, so the guard sees the existing
+`__d` and skips installing Metro's module system: the bundle's modules and the
+require that looks them up end up in different registries, and nothing renders.
+Debug is unaffected because `__DEV__` is true, so the guard always installs.
+
+The guard assumes any pre-existing `__d` is a compatible Metro module system,
+which does not hold on an out-of-tree platform with its own runtime.
+`EXPO_USE_METRO_REQUIRE` still exists in `@expo/metro-config` but is explicitly
+disregarded, so there is no opt-out today.
+
+Verified by elimination: a bundle from the Vega CLI builds and renders through
+`build-vega --skip-bundling`, so that flag is not at fault. Minification, bundle
+size, and the missing `keplerscript-app-system-bundles-config.json` were each
+ruled out separately.
+
+### Fast Refresh needs `expo start`
+
+Fast Refresh applies live under `expo start`. Under `react-native start` with
+this Metro config, Metro rebuilds on save but the change appears only after
+relaunching the app.
 
 ## Troubleshooting
 

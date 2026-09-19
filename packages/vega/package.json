@@ -7,13 +7,13 @@
   ],
   "scripts": {
     "clean": "rm -rf node_modules buildinfo.json dist build",
-    "start": "react-native start",
+    "start": "expo start",
     "test": "jest --colors ",
     "test:snapshot": "jest --colors --updateSnapshot",
     "lint": "eslint src test",
     "lint:fix": "eslint src test --fix",
-    "build:release": "react-native build-kepler --build-type Release",
-    "build:debug": "react-native build-kepler --build-type Debug",
+    "build:release": "react-native build-vega --build-type Release",
+    "build:debug": "npm-run-all bundle:debug hermes:debug native:debug",
     "build:app": "npm-run-all build:release",
     "build": "npm-run-all build:release",
     "release": "npm-run-all lint test build:app",
@@ -25,7 +25,10 @@
     "vvd:port": "vega device start-port-forwarding --port 8081 --forward false -d VirtualDevice",
     "vvd:install": "vega device install-app -d VirtualDevice -p",
     "vvd:launch": "vega device launch-app -d VirtualDevice -a com.amazondeveloper.hellosharedworkspace.main",
-    "vvd:uninstall": "vega device uninstall-app -d VirtualDevice -a com.amazondeveloper.hellosharedworkspace.main"
+    "vvd:uninstall": "vega device uninstall-app -d VirtualDevice -a com.amazondeveloper.hellosharedworkspace.main",
+    "bundle:debug": "mkdir -p build/lib/rn-bundles/Debug && expo export:embed --platform kepler --dev true --entry-file ../../index.js --bundle-output build/lib/rn-bundles/Debug/index.bundle --assets-dest build/lib/rn-bundles/Debug",
+    "hermes:debug": "react-native hermes-vega --bundle-path build/lib/rn-bundles/Debug/index.bundle --out build/lib/rn-bundles/Debug/index.hermes.bundle",
+    "native:debug": "react-native build-vega --build-type Debug --skip-bundling"
   },
   "dependencies": {
     "@amazon-devices/kepler-module-resolver-preset": "^0.1.15",
