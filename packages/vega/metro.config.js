@@ -26,6 +26,9 @@ const metroTools = getMetroTools();
 // Native's framework defaults, which only apply when @react-native/metro-config's
 // getDefaultConfig runs. Call it for the platform redirect, then layer Expo's
 // defaults on top.
+const keplerInitializeCore = require.resolve(
+  '@amazon-devices/react-native-kepler/Libraries/Core/InitializeCore',
+);
 const rnConfig = getReactNativeDefaultConfig(__dirname);
 const defaultConfig = getExpoDefaultConfig(__dirname);
 
@@ -64,14 +67,23 @@ module.exports = mergeConfig(
       resolveRequest: rnConfig.resolver.resolveRequest,
     },
     serializer: {
-      getModulesRunBeforeMainModule:
-        rnConfig.serializer.getModulesRunBeforeMainModule,
+      // The fork's InitializeCore reaches this list through React Native's
+      // framework defaults, which only the React Native CLI installs. Under
+      // `expo start` it is missing and the app never renders, so append it
+      // explicitly. This package targets Kepler only, so hardcoding is safe.
+      getModulesRunBeforeMainModule: (...args) => {
+        const modules = rnConfig.serializer.getModulesRunBeforeMainModule(
+          ...args,
+        );
+        return modules.includes(keplerInitializeCore)
+          ? modules
+          : [...modules, keplerInitializeCore];
+      },
       // The Kepler CLI calls getPolyfills() with no arguments; Expo's
       // implementation destructures { platform }.
       getPolyfills: rnConfig.serializer.getPolyfills,
-      // KNOWN LIMITATION: Fast Refresh does not apply live with this config.
-      // Metro rebuilds on save, but the change only appears after relaunching
-      // the app. Fast Refresh works with React Native's config.
+      // Note: under `react-native start` Fast Refresh does not apply live and
+      // changes need an app relaunch. Under `expo start` it works.
 
     },
   },
