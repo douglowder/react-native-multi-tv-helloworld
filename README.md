@@ -366,20 +366,19 @@ The cause is not yet identified. What is established:
   explanation for a debug/release split. Patching the guard away did not fix the
   release build.
 
-**Current lead.** The two bundles differ in how many modules run at startup:
+- Missing `InitializeCore` invocation. A Vega CLI bundle ends with
+  `__r(115); __r(0);` where Expo's ends with `__r(0);`, so the modules from
+  `serializer.getModulesRunBeforeMainModule` are not invoked. `export:embed`
+  does call that function -- a probe confirmed it returns two modules -- but
+  discards the result, and the fork's `InitializeCore` is present in the bundle
+  as module 115 while never being run. Hand-appending `__r(115);` before
+  `__r(0);` and rebuilding did not fix it.
 
-```
-Vega CLI:          __r(115); __r(0);
-Expo export:embed: __r(0);
-```
-
-The extra entry in a Vega CLI bundle is what
-`serializer.getModulesRunBeforeMainModule` contributes -- the Kepler fork's
-`Libraries/Core/InitializeCore`, which `metro.config.js` appends explicitly.
-Expo's bundle appears not to emit it, which would leave the Kepler runtime
-uninitialized and is consistent with a bundle that loads but never renders.
-Expo installs its own `serializer.customSerializer`, which is the most likely
-place that gets dropped. This has not been confirmed.
+**Still open.** With module IDs and startup invocation now matching a working
+Vega CLI bundle, the remaining difference is in the transformed module contents
+rather than the bundle structure. `@expo/cli` replaces Metro's transform worker
+with its own supervising worker; `transformer.expo_customTransformerPath: false`
+opts out of that and has not been tried on this path.
 
 ### Fast Refresh needs `expo start`
 
