@@ -344,44 +344,42 @@ The Expo TV app (`packages/expotv/`) was scaffolded from the default Expo TV tem
 
 The packager and the debug build use Expo (`expo start` and `expo export:embed`).
 Release still bundles through the Vega CLI, because an Expo-produced release
-bundle loads on device but never renders.
+bundle installs and loads on device but never renders.
 
-The cause is Expo's replacement for Metro's module system. `@expo/cli` swaps it
-in unconditionally, in
-`@expo/cli/build/src/start/server/metro/withMetroMultiPlatform.js`:
+The cause is not yet identified. What is established:
 
-```js
-// NOTE(@kitten): This is now always active and EXPO_USE_METRO_REQUIRE / isNamedRequiresEnabled is disregarded
-const metroRequirePolyfill = require.resolve('@expo/cli/build/metro-require/require');
-asWritable(metroDefaults).moduleSystem = metroRequirePolyfill;
+**Ruled out.** Each was tested by rebuilding and running on a virtual device:
+
+- `build-vega --skip-bundling` is not at fault. A bundle produced by the Vega
+  CLI builds and renders through that flag.
+- Minification. An unminified Expo bundle (2.55 MB, against the Vega CLI's
+  2.50 MB) fails the same way.
+- The missing `keplerscript-app-system-bundles-config.json`. Copying it in
+  changes nothing. It is written as `{}` by the bundle splitter in
+  `@amazon-devices/keplerscript-commonmodules`.
+- Module ID scheme. The Vega CLI normally emits hashed string IDs
+  (`__r("cf70efd87f1a03bff289")`) where Expo emits numeric ones (`__r(0)`), but
+  building with `DISABLE_APP_BUNDLE_SPLITTING=true` makes the Vega CLI emit
+  numeric IDs too and the app still works.
+- Expo's module-system polyfill guard. `@expo/cli/build/metro-require/require.js`
+  installs itself only when `__DEV__ || !global.__d`, which looked like a good
+  explanation for a debug/release split. Patching the guard away did not fix the
+  release build.
+
+**Current lead.** The two bundles differ in how many modules run at startup:
+
+```
+Vega CLI:          __r(115); __r(0);
+Expo export:embed: __r(0);
 ```
 
-That polyfill installs itself conditionally
-(`@expo/cli/build/metro-require/require.js`):
-
-```js
-if (__DEV__ || !global[`${__METRO_GLOBAL_PREFIX__}__d`]) {
-    global.__r = metroRequire;
-    global[`${__METRO_GLOBAL_PREFIX__}__d`] = define;
-    ...
-}
-```
-
-The Vega runtime defines `__r`, `__d` and `__registerSegment` before any bundle
-loads. In a release bundle `__DEV__` is false, so the guard sees the existing
-`__d` and skips installing Metro's module system: the bundle's modules and the
-require that looks them up end up in different registries, and nothing renders.
-Debug is unaffected because `__DEV__` is true, so the guard always installs.
-
-The guard assumes any pre-existing `__d` is a compatible Metro module system,
-which does not hold on an out-of-tree platform with its own runtime.
-`EXPO_USE_METRO_REQUIRE` still exists in `@expo/metro-config` but is explicitly
-disregarded, so there is no opt-out today.
-
-Verified by elimination: a bundle from the Vega CLI builds and renders through
-`build-vega --skip-bundling`, so that flag is not at fault. Minification, bundle
-size, and the missing `keplerscript-app-system-bundles-config.json` were each
-ruled out separately.
+The extra entry in a Vega CLI bundle is what
+`serializer.getModulesRunBeforeMainModule` contributes -- the Kepler fork's
+`Libraries/Core/InitializeCore`, which `metro.config.js` appends explicitly.
+Expo's bundle appears not to emit it, which would leave the Kepler runtime
+uninitialized and is consistent with a bundle that loads but never renders.
+Expo installs its own `serializer.customSerializer`, which is the most likely
+place that gets dropped. This has not been confirmed.
 
 ### Fast Refresh needs `expo start`
 
