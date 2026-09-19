@@ -365,7 +365,6 @@ The cause is not yet identified. What is established:
   installs itself only when `__DEV__ || !global.__d`, which looked like a good
   explanation for a debug/release split. Patching the guard away did not fix the
   release build.
-
 - Missing `InitializeCore` invocation. A Vega CLI bundle ends with
   `__r(115); __r(0);` where Expo's ends with `__r(0);`, so the modules from
   `serializer.getModulesRunBeforeMainModule` are not invoked. `export:embed`
@@ -373,12 +372,24 @@ The cause is not yet identified. What is established:
   discards the result, and the fork's `InitializeCore` is present in the bundle
   as module 115 while never being run. Hand-appending `__r(115);` before
   `__r(0);` and rebuilding did not fix it.
+- The `hermes-stable` transform profile. `export:embed` forces
+  `unstable_transformProfile: 'hermes-stable'` when it detects Hermes
+  (`@expo/cli/build/src/export/embed/exportEmbedAsync.js`), which is a plausible
+  mismatch against the Kepler Hermes fork. Rebuilding with
+  `--unstable-transform-profile default` fails the same way.
+- Anything specific to `export:embed`. `expo export --platform kepler`, the OTA
+  path with none of the native build wrapping, produces a bundle that fails
+  identically. The breakage is in Expo's shared Metro bundling, not in the embed
+  command.
+- Expo's supervising transform worker. `@expo/cli` replaces Metro's transform
+  worker on every Expo bundling path;
+  `transformer.expo_customTransformerPath: false` opts out, and the release
+  build still fails.
 
-**Still open.** With module IDs and startup invocation now matching a working
-Vega CLI bundle, the remaining difference is in the transformed module contents
-rather than the bundle structure. `@expo/cli` replaces Metro's transform worker
-with its own supervising worker; `transformer.expo_customTransformerPath: false`
-opts out of that and has not been tried on this path.
+**Still open.** Module IDs, startup invocation and entry sequence can all be made
+to match a working Vega CLI bundle while the Expo bundle still fails, so the
+remaining difference is in transformed module contents rather than bundle
+structure. None of the switches above reach it.
 
 ### Fast Refresh needs `expo start`
 
