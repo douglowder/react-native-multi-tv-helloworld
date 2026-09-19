@@ -18,6 +18,12 @@
     },
     "android": {
       "package": "com.douglowderexpo.helloworldvega"
+    },
+    "platforms": [
+      "kepler"
+    ],
+    "experiments": {
+      "outOfTreePlatforms": true
     }
   }
 }
