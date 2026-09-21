@@ -3,40 +3,17 @@
   "version": "0.1.0",
   "description": "Multi-TV Hello World - Monorepo for building TV apps across Vega, Expo TV, and mobile platforms",
   "scripts": {
-    "clean": "yarn workspaces foreach --all run clean ; rm -rf node_modules",
-    "vega:build": "yarn workspace @multitv/vega run build:debug",
-    "vega:vvd:mseries": "yarn workspace @multitv/vega run vvd:mseries",
-    "vega:vvd:intel": "yarn workspace @multitv/vega run vvd:intel",
-    "vega:firetv": "yarn workspace @multitv/vega run firetv",
-    "expotv": "yarn workspace @multitv/expotv",
-    "expotv:prebuild": "yarn workspace @multitv/expotv run prebuild:tv",
-    "expotv:android": "yarn workspace @multitv/expotv run android",
-    "expotv:ios": "yarn workspace @multitv/expotv run ios",
-    "expotv:web": "yarn workspace @multitv/expotv run web"
-  },
-  "workspaces": {
-    "packages": [
-      "packages/*"
-    ],
-    "nohoist": [
-      "**/react",
-      "**/react-dom",
-      "**/react-native",
-      "**/react-native/**"
-    ]
+    "clean": "pnpm -r run clean ; rm -rf node_modules",
+    "vega:build": "pnpm --filter @multitv/vega run build:debug",
+    "vega:vvd:mseries": "pnpm --filter @multitv/vega run vvd:mseries",
+    "vega:vvd:intel": "pnpm --filter @multitv/vega run vvd:intel",
+    "vega:firetv": "pnpm --filter @multitv/vega run firetv",
+    "expotv": "pnpm --filter @multitv/expotv",
+    "expotv:prebuild": "pnpm --filter @multitv/expotv run prebuild:tv",
+    "expotv:android": "pnpm --filter @multitv/expotv run android",
+    "expotv:ios": "pnpm --filter @multitv/expotv run ios",
+    "expotv:web": "pnpm --filter @multitv/expotv run web"
   },
   "private": true,
-  "packageManager": "yarn@4.18.0",
-  "resolutions": {
-    "expo-modules-autolinking@npm:55.0.22": "patch:expo-modules-autolinking@npm%3A55.0.27#~/.yarn/patches/expo-modules-autolinking-npm-55.0.27-ce1c0b1111.patch",
-    "expo-modules-autolinking@npm:55.0.27": "patch:expo-modules-autolinking@npm%3A55.0.27#~/.yarn/patches/expo-modules-autolinking-npm-55.0.27-ce1c0b1111.patch",
-    "@expo/config@npm:~55.0.17": "patch:@expo/config@npm%3A55.0.21#~/.yarn/patches/@expo-config-npm-55.0.21-32dd1d8d97.patch",
-    "@expo/config@npm:~55.0.21": "patch:@expo/config@npm%3A55.0.21#~/.yarn/patches/@expo-config-npm-55.0.21-32dd1d8d97.patch",
-    "@expo/cli@npm:55.0.30": "patch:@expo/cli@npm%3A55.0.36#~/.yarn/patches/@expo-cli-npm-55.0.36-21eff95a7a.patch",
-    "@expo/cli@npm:55.0.36": "patch:@expo/cli@npm%3A55.0.36#~/.yarn/patches/@expo-cli-npm-55.0.36-21eff95a7a.patch",
-    "@expo/metro-config@npm:55.0.21": "patch:@expo/metro-config@npm%3A55.0.27#~/.yarn/patches/@expo-metro-config-npm-55.0.27-b59e53138e.patch",
-    "@expo/metro-config@npm:~55.0.21": "patch:@expo/metro-config@npm%3A55.0.27#~/.yarn/patches/@expo-metro-config-npm-55.0.27-b59e53138e.patch",
-    "@expo/metro-config@npm:55.0.27": "patch:@expo/metro-config@npm%3A55.0.27#~/.yarn/patches/@expo-metro-config-npm-55.0.27-b59e53138e.patch",
-    "@expo/metro-config@npm:~55.0.27": "patch:@expo/metro-config@npm%3A55.0.27#~/.yarn/patches/@expo-metro-config-npm-55.0.27-b59e53138e.patch"
-  }
+  "packageManager": "pnpm@12.4.2"
 }

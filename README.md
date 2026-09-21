@@ -1,12 +1,12 @@
 # Multi-TV Hello World
 
-A monorepo for building TV apps across multiple platforms using Yarn workspaces, including Vega OS (Fire TV), Expo TV (Android TV / Apple TV), and web.
+A monorepo for building TV apps across multiple platforms using pnpm workspaces, including Vega OS (Fire TV), Expo TV (Android TV / Apple TV), and web.
 
 ![Screenshots](./images/screenshots.png)
 
 ## Introduction
 
-This project demonstrates how to share React Native code across multiple TV platforms using a Yarn workspaces monorepo. It includes:
+This project demonstrates how to share React Native code across multiple TV platforms using a pnpm workspaces monorepo. It includes:
 
 - A shared package with common components, screens, and utilities
 - A Vega app targeting Fire TV
@@ -23,7 +23,9 @@ This project demonstrates how to share React Native code across multiple TV plat
 ## Project Structure
 
 ```
-├── package.json                 # Root workspace config (Yarn 4)
+├── package.json                 # Root scripts
+├── pnpm-workspace.yaml          # Workspace list, nodeLinker, Expo patches
+├── patches/                     # Patches adding the kepler platform to Expo
 ├── packages/
 │   ├── shared/                  # @multitv/shared
 │   │   ├── src/
@@ -54,17 +56,16 @@ This project demonstrates how to share React Native code across multiple TV plat
 ### Core Requirements
 
 - [Node.js](https://nodejs.org/) (v18 or higher)
-- [Yarn](https://yarnpkg.com/) (v4.5.0 or higher)
+- [pnpm](https://pnpm.io/) (v12 or higher)
 - [Git](https://git-scm.com/)
 
 ### Platform-Specific Requirements
 
 **Vega (Fire TV)**
 
-Vega development requires the Vega SDK and Yarn configuration for Amazon device packages.
+Vega development requires the Vega SDK. The `@amazon-devices` packages resolve from the public npm registry, so no extra registry configuration is needed.
 
 1. [Install the Vega Developer Tools](https://developer.amazon.com/docs/vega/latest/install-vega-sdk.html)
-2. [Configure Yarn for Vega](https://developer.amazon.com/docs/vega/latest/configure-package-managers.html)
 
 **Expo TV**
 
@@ -76,31 +77,31 @@ Vega development requires the Vega SDK and Yarn configuration for Amazon device 
 
 ```bash
 # Install all workspace dependencies
-yarn
+pnpm install
 
 # Build the Vega/Fire TV app (debug)
-yarn vega:build
+pnpm vega:build
 
 # Run on Vega Virtual Device (Mac M-series)
-yarn vega:vvd:mseries
+pnpm vega:vvd:mseries
 
 # Run on Vega Virtual Device (Intel Mac)
-yarn vega:vvd:intel
+pnpm vega:vvd:intel
 
 # Run on a Fire TV Stick (pass DSN)
-yarn vega:firetv <DSN>
+pnpm vega:firetv <DSN>
 
 # Prebuild Expo TV native projects
-yarn expotv:prebuild
+pnpm expotv:prebuild
 
 # Run on Android TV
-yarn expotv:android
+pnpm expotv:android
 
 # Run on Apple TV
-yarn expotv:ios
+pnpm expotv:ios
 
 # Run on web
-yarn expotv:web
+pnpm expotv:web
 ```
 
 ## Build and Run
@@ -114,10 +115,10 @@ Build the project:
 ```bash
 # Debug build (recommended for development, enables Fast Refresh).
 # Bundles with Expo: expo export:embed, then Hermes, then the native build.
-yarn workspace @multitv/vega run build:debug
+pnpm --filter @multitv/vega run build:debug
 
 # Release build. Still bundles through the Vega CLI -- see "Known Issues".
-yarn workspace @multitv/vega run build:release
+pnpm --filter @multitv/vega run build:release
 ```
 
 The packager is `expo start`. Fast Refresh and Expo dev tooling such as Atlas
@@ -128,11 +129,11 @@ Run on a Vega virtual device:
 ```bash
 vega virtual-device start
 
-# Mac M-series (aarch64) - using yarn script
-yarn vega:vvd:mseries
+# Mac M-series (aarch64) - using package script
+pnpm vega:vvd:mseries
 
-# Intel Mac (x86_64) - using yarn script
-yarn vega:vvd:intel
+# Intel Mac (x86_64) - using package script
+pnpm vega:vvd:intel
 
 # Or directly with the Vega CLI
 # Mac M-series (aarch64)
@@ -147,26 +148,26 @@ from an EAS build). Each step is a separate script, so you can repeat any one of
 them without redoing the others. Run these from `packages/vega`:
 
 ```bash
-yarn vvd:start                          # boot the virtual device
-yarn start                              # Metro, in a second terminal
-yarn vvd:port                           # let the device reach Metro on 8081
-yarn vvd:install path/to/vega_aarch64.vpkg
-yarn vvd:launch
+pnpm vvd:start                          # boot the virtual device
+pnpm start                              # Metro, in a second terminal
+pnpm vvd:port                           # let the device reach Metro on 8081
+pnpm vvd:install path/to/vega_aarch64.vpkg
+pnpm vvd:launch
 ```
 
 A debug package installed this way loads its bundle from Metro, so Fast Refresh
 works. When you are finished:
 
 ```bash
-yarn vvd:uninstall
-yarn vvd:stop
+pnpm vvd:uninstall
+pnpm vvd:stop
 ```
 
 Run on a Fire TV Stick (replace `<DSN>` with your device serial number):
 
 ```bash
-# Using the yarn script
-yarn vega:firetv <DSN>
+# Using the package script
+pnpm vega:firetv <DSN>
 
 # Or directly
 vega run-app packages/vega/build/armv7-release/vega_armv7.vpkg com.amazondeveloper.hellosharedworkspace.main -d <DSN>
@@ -183,20 +184,20 @@ The `vega run-app` command takes the form `vega run-app <Vpkg path> <App ID> -d 
 Prebuild the native projects first:
 
 ```bash
-yarn expotv:prebuild
+pnpm expotv:prebuild
 ```
 
 Then run on your target platform:
 
 ```bash
 # Android TV
-yarn expotv:android
+pnpm expotv:android
 
 # Apple TV
-yarn expotv:ios
+pnpm expotv:ios
 
 # Web
-yarn expotv:web
+pnpm expotv:web
 ```
 
 ## EAS Builds
@@ -279,7 +280,7 @@ Kepler runtime:
   while Expo's implementation destructures `{ platform }`.
 
 Expo does not know the `kepler` platform on its own. Four patches in
-`.yarn/patches/` add it to `@expo/metro-config`, `@expo/config`, `@expo/cli` and
+`patches/` add it to `@expo/metro-config`, `@expo/config`, `@expo/cli` and
 `expo-modules-autolinking`, mirroring how `macos` and `tvos` are handled. Without
 them the bundler stops with:
 
@@ -418,7 +419,7 @@ If you see `[CXX1101] NDK did not have a source.properties file`, remove any emp
 - [React Native TvOS](https://github.com/react-native-tvos/react-native-tvos)
 - [Vega Developer Portal](https://developer.amazon.com/docs/vega/vega.html)
 - [Expo Documentation](https://docs.expo.dev/)
-- [Yarn Workspaces](https://yarnpkg.com/features/workspaces)
+- [pnpm Workspaces](https://pnpm.io/workspaces)
 
 ## License
 

@@ -10,11 +10,12 @@ const {
   getDefaultConfig: getReactNativeDefaultConfig,
   mergeConfig,
 } = require('@react-native/metro-config');
-const { getMetroTools, getMonorepoRoot } = require("react-native-monorepo-tools");
 
 const projectRoot = __dirname;
-const monorepoRoot = getMonorepoRoot();
-const metroTools = getMetroTools();
+// pnpm keeps the workspace list in pnpm-workspace.yaml rather than a
+// `workspaces` field, so resolve the root directly. react-native-monorepo-tools
+// looks for that field and its blockList assumes a Yarn layout.
+const monorepoRoot = path.resolve(projectRoot, '..', '..');
 
 /**
  * Metro configuration
@@ -34,19 +35,22 @@ const defaultConfig = getExpoDefaultConfig(__dirname);
 
 const config = {
   projectRoot: monorepoRoot,
-  watchFolders: [monorepoRoot, ...metroTools.watchFolders],
+  watchFolders: [monorepoRoot],
   resolver: {
     nodeModulesPaths: [
       path.resolve(projectRoot, 'node_modules'),
       path.resolve(monorepoRoot, 'node_modules'),
     ],
     extraNodeModules: {
-      ...metroTools.extraNodeModules,
-      // Alias lottie-react-native to the Kepler-compatible version
-      // so shared package code resolves to the correct native module
-      'lottie-react-native': path.resolve(projectRoot, 'node_modules', '@amazon-devices', 'lottie-react-native'),
+      // Alias lottie-react-native to the Kepler-compatible version so shared
+      // package code resolves to the correct native module. Resolved rather
+      // than hardcoded: pnpm hoists this to the workspace root, so a
+      // packages/vega/node_modules path silently misses and Metro falls back
+      // to the generic package, which does not render on Vega.
+      'lottie-react-native': path.dirname(
+        require.resolve('@amazon-devices/lottie-react-native/package.json'),
+      ),
     },
-    blockList: metroTools.blockList,
   },
 };
 

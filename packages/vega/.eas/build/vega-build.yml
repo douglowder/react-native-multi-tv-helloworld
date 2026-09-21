@@ -30,12 +30,12 @@ build:
     - run:
         name: Build debug vpkg
         command: |
-          yarn run "build:debug"
+          pnpm run build:debug
 
     - run:
         name: Build release vpkg
         command: |
-          yarn run "build:release"
+          pnpm run build:release
 
     - run:
         name: Move artifacts to final location and archive them

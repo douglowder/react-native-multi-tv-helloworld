@@ -16,7 +16,7 @@
   "dependencies": {
     "@expo/log-box": "55.0.12",
     "@expo/vector-icons": "^15.0.2",
-    "@multitv/shared": "*",
+    "@multitv/shared": "workspace:*",
     "expo": "^55.0.0",
     "expo-build-properties": "~55.0.14",
     "expo-constants": "~55.0.16",

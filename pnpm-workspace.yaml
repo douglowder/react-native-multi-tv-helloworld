@@ -1,0 +1,22 @@
+packages:
+  - packages/*
+
+# Hoisted layout, closest to the previous Yarn node-modules install and what the
+# Vega and React Native CLIs expect to find.
+nodeLinker: hoisted
+
+# The Expo tooling is patched to know about the out-of-tree `kepler` platform.
+# See README "EAS Builds" and packages/vega/metro.config.js.
+# Two copies of each package would otherwise be installed; pin one so a single
+# patched copy is used everywhere.
+overrides:
+  expo-modules-autolinking: 55.0.27
+  '@expo/config': 55.0.21
+  '@expo/cli': 55.0.36
+  '@expo/metro-config': 55.0.27
+
+patchedDependencies:
+  expo-modules-autolinking@55.0.27: patches/expo-modules-autolinking@55.0.27.patch
+  '@expo/config@55.0.21': patches/@expo__config@55.0.21.patch
+  '@expo/cli@55.0.36': patches/@expo__cli@55.0.36.patch
+  '@expo/metro-config@55.0.27': patches/@expo__metro-config@55.0.27.patch
