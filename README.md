@@ -260,54 +260,46 @@ build config from the upload and fails the build. The rule is therefore anchored
 packages/vega/build/
 ```
 
-**`metro.config.js` does not extend `expo/metro-config`.** `expo-doctor` warns
-about this, but adopting Expo's config breaks the build today. The config
-instead declares the extra `sourceExts` and `assetExts` that Expo's defaults
-add, which satisfies part of the check while keeping the Kepler platform.
+**`metro.config.js` extends both `expo/metro-config` and
+`@react-native/metro-config`.** Expo's defaults are the base; four settings are
+taken from React Native because Expo's equivalents are not compatible with the
+Kepler runtime:
 
-Vega bundles with the platform name `kepler`, which the Kepler CLI registers on
-top of React Native's Metro defaults. Expo's `getDefaultConfig` sets an explicit
-platform list:
+- `transformerPath` and `transformer.getTransformOptions`. Expo replaces Metro's
+  transform worker and inverts the options it consumes. Mixing one side's worker
+  with the other's options produces a bundle that loads but never renders, so
+  both come from React Native together.
+- `resolver.resolveRequest`, which rewrites `react-native` to
+  `@amazon-devices/react-native-kepler` when bundling for `kepler`.
+- `serializer.getModulesRunBeforeMainModule`, which appends the fork's
+  `InitializeCore`. It reaches that list through React Native's framework
+  defaults, which only the React Native CLI installs, so under `expo start` it
+  must be added explicitly.
+- `serializer.getPolyfills`, because the Vega CLI calls it with no arguments
+  while Expo's implementation destructures `{ platform }`.
 
-```js
-platforms: ['ios', 'android', 'tvos', 'macos']
-```
-
-`kepler` is not in it, so the bundler stops with:
+Expo does not know the `kepler` platform on its own. Four patches in
+`.yarn/patches/` add it to `@expo/metro-config`, `@expo/config`, `@expo/cli` and
+`expo-modules-autolinking`, mirroring how `macos` and `tvos` are handled. Without
+them the bundler stops with:
 
 ```
 error: Invalid platform "kepler" selected.
 Available platforms are: "ios", "android", "tvos", "macos".
 ```
 
-Adding `kepler` back to `resolver.platforms` gets past that error but not much
-further: module resolution then pulls React Native internals from `react-native`
-instead of `@amazon-devices/react-native-kepler`, and the bundle fails on files
-such as `ReactDevToolsSettingsManager`, which ships only `.android.js` and
-`.ios.js` variants. Expo's resolver defaults differ from React Native's here —
-notably `unstable_conditionNames`, which Expo leaves empty and React Native sets
-to `['react-native']`.
-
-Making Expo's Metro config usable from Vega is therefore work on the Expo side:
-it needs a supported way to declare an out-of-tree platform rather than a fixed
-list. It may also need Vega to move to a newer React Native first. The versions
-are some way apart today, and `expo-doctor` already reports the gap:
-
-| Package | Expected by Expo SDK 57 | Used by Vega |
-| --- | --- | --- |
-| `react-native` | 0.86.3 | 0.83.0 |
-| `typescript` | ~6.0.3 | 5.8.3 |
-
-Until then, extending `@react-native/metro-config` is the supported path. The
-Kepler build prints its own warning if the config does not:
-
-> From React Native 0.73, your project's Metro config should extend
-> `@react-native/metro-config` or it will fail to build.
+The autolinking patch is what makes the `react-native` redirect work on Expo's
+own resolver: `getSupportPackageForPlatform` maps `kepler` to
+`@amazon-devices/react-native-kepler`, the same mechanism `react-native-macos`
+uses.
 
 One `expo-doctor` warning remains, about `projectRoot` pointing at the monorepo
 root rather than `packages/vega`. That setting is required: the entry point is
 the root `index.js`, and Metro refuses to serve assets from `packages/shared`
 without it. Removing it still builds, but the app renders without its icons.
+
+Release bundling is the one part that does not go through Expo — see
+[Known Issues](#known-issues).
 
 ## Tech Stack
 
