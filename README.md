@@ -51,6 +51,49 @@ This project demonstrates how to share React Native code across multiple TV plat
 │       └── package.json
 ```
 
+## Package Manager
+
+The workspace uses [pnpm](https://pnpm.io/). `pnpm-workspace.yaml` holds the
+workspace list and three settings that matter:
+
+```yaml
+nodeLinker: hoisted
+```
+
+A hoisted `node_modules` is the layout the Vega CLI and the React Native CLI
+expect. The default isolated layout is not used here.
+
+```yaml
+overrides:          # one copy of each patched Expo package
+patchedDependencies: # the kepler platform patches in patches/
+```
+
+Two copies of each Expo package would otherwise be installed, so `overrides`
+pins a single version and `patchedDependencies` patches that version. The patch
+files live in `patches/`.
+
+Workspace dependencies use the `workspace:` protocol, which pnpm requires:
+
+```json
+"@multitv/shared": "workspace:*"
+```
+
+### Writing config that survives the hoisted layout
+
+Two things to avoid when adding Metro or build configuration:
+
+- **Do not hardcode `node_modules` paths.** pnpm hoists most packages to the
+  workspace root, so a `packages/vega/node_modules/...` path can silently miss.
+  Metro then falls back to whatever else resolves, and the app builds and loads
+  but never renders. Use `require.resolve` instead -- see the
+  `lottie-react-native` alias in `packages/vega/metro.config.js`.
+- **Do not use `react-native-monorepo-tools`.** It finds the monorepo root
+  through a `workspaces` field in `package.json`, which pnpm replaces with
+  `pnpm-workspace.yaml`, and its block list assumes a Yarn layout.
+
+EAS builds pick up pnpm through `corepack: true` in `packages/vega/eas.json`
+together with the `packageManager` field in the root `package.json`.
+
 ## Prerequisites
 
 ### Core Requirements
